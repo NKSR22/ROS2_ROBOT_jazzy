@@ -3,3 +3,16 @@
 **/log/
 **/.colcon/
 *.pyc
+__pycache__/
+
+# Environment configs (อย่า commit .env จริง ใช้ .env.example แทน)
+.env
+.env.*
+!.env.example
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log

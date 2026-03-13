@@ -3,7 +3,11 @@ services:
     build: .
     container_name: rpi_sensors
     network_mode: host
-    privileged: true
+    # ไม่ใช้ privileged: true เพราะ device mapping + cap_add เพียงพอและปลอดภัยกว่า
+    cap_add:
+      - NET_ADMIN   # สำหรับ CycloneDDS multicast
+      - NET_RAW     # สำหรับ raw socket ของ DDS
+      - SYS_RAWIO   # สำหรับ serial port access
     environment:
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-30}
@@ -12,6 +16,7 @@ services:
       - /dev/video0:/dev/video0
     volumes:
       - ./src:/ros2_ws/src:rw
+    restart: unless-stopped
     stdin_open: true
     tty: true
 
@@ -19,10 +24,15 @@ services:
     image: microros/micro-ros-agent:jazzy
     container_name: rpi_microros
     network_mode: host
-    privileged: true
+    # ไม่ใช้ privileged: true เพราะ device mapping + cap_add เพียงพอและปลอดภัยกว่า
+    cap_add:
+      - NET_ADMIN   # สำหรับ CycloneDDS multicast
+      - NET_RAW     # สำหรับ raw socket ของ DDS
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
     environment:
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-30}
-    command: serial --dev /dev/ttyUSB0 -v6
+    restart: unless-stopped
+    # ลด verbosity จาก -v6 (สูงสุด) เป็น -v4 เพื่อลด log noise และป้องกัน info leak
+    command: serial --dev /dev/ttyUSB0 -v4

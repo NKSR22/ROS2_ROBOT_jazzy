@@ -1,6 +1,6 @@
 FROM ros:jazzy-ros-base
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-jazzy-rmw-cyclonedds-cpp \
     ros-jazzy-sllidar-ros2 \
     ros-jazzy-v4l2-camera \

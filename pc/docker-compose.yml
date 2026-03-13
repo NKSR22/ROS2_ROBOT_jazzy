@@ -3,6 +3,8 @@ services:
     build: .
     container_name: ros2_jazzy_pc
     network_mode: host
+    # privileged: true จำเป็นสำหรับ GPU (Gazebo) และ X11 display ฝั่ง PC
+    # ถ้าไม่ใช้ Gazebo หรือ GPU สามารถเปลี่ยนเป็น cap_add ได้เช่นเดียวกับฝั่ง rpi5
     privileged: true
     environment:
       DISPLAY: ${DISPLAY}
@@ -12,5 +14,6 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ./src:/ros2_ws/src:rw
+    restart: unless-stopped
     stdin_open: true
     tty: true
