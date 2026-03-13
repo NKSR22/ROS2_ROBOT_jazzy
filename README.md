@@ -161,41 +161,49 @@ ip a
 
 คู่มือนี้ใช้ Docker Engine + Docker Compose plugin
 
-### 3.1 ติดตั้ง Docker บน Ubuntu PC
+### 3.1 ติดตั้ง Docker บน Ubuntu (ทั้ง PC และ Pi 5 ที่ลง Ubuntu)
 
-รันตามนี้บน PC:
+หากคุณใช้ Ubuntu 24.04 (Noble) ไม่ว่าจะอยู่บน PC หรือ Raspberry Pi ให้ใช้คำสั่งชุดนี้:
 
 ```bash
 sudo apt update
-sudo apt install -y ca-certificates curl gnupg
+sudo apt install -y ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo $VERSION_CODENAME) stable" | \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-### 3.2 ติดตั้ง Docker บน Raspberry Pi OS
+### 3.2 ติดตั้ง Docker บน Raspberry Pi OS (Debian-based)
 
-รันตามนี้บน Pi:
+**ใช้เฉพาะกรณีที่ลง Raspberry Pi OS Lite (64-bit)** ตามข้อ 2.1 เท่านั้น:
 
 ```bash
 sudo apt update
-sudo apt install -y ca-certificates curl gnupg
+sudo apt install -y ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo $VERSION_CODENAME) stable" | \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
+
+> [!TIP]
+> **หากพบข้อผิดพลาด 404 Not Found** หรือหาแพ็กเกจไม่เจอ แสดงว่าคุณอาจใช้ Repository ผิดตระกูล (เช่น ใช้ debian บน ubuntu) ให้ลบไฟล์เก่าทิ้งก่อน:
+> `sudo rm /etc/apt/sources.list.d/docker.list /etc/apt/keyrings/docker.*` แล้วลงใหม่ตาม OS ที่ถูกต้องข้างต้น
 
 ### 3.3 ให้ user ใช้ Docker โดยไม่ต้องพิมพ์ sudo
 
@@ -626,6 +634,42 @@ docker logs rpi_sensors
 docker logs rpi_microros
 ```
 
+### 12.6 ปัญหา Wi-Fi บน Raspberry Pi ไม่เชื่อมต่อ
+
+หาก Pi ไม่เชื่อมต่อ Wi-Fi หรือต้องการเปลี่ยน SSID:
+
+**กรณีใช้ Ubuntu (Noble):**
+ใช้ `nmcli` ในการจัดการ:
+
+```bash
+# ตรวจสอบสถานะการเชื่อมต่อ
+nmcli device status
+
+# สแกนหาไวไฟ
+nmcli device wifi list
+
+# เชื่อมต่อไวไฟใหม่
+sudo nmcli device wifi connect "ชื่อ-SSID" password "รหัสผ่าน"
+
+# ตรวจสอบ IP
+ip a show wlan0
+```
+
+**กรณีใช้ Raspberry Pi OS:**
+ใช้ `raspi-config` หรือแก้ไขไฟล์ config:
+
+```bash
+# วิธีที่ง่ายที่สุด
+sudo raspi-config
+# ไปที่ System Options -> Wireless LAN
+
+# หรือใช้ wpa_cli
+wpa_cli -i wlan0 reconfigure
+```
+
+> [!CAUTION]
+> หากใช้หุ่นยนต์เคลื่อนที่ แนะนำให้ตั้งค่า IP แบบคงที่ (Static IP) หรือจอง IP ผ่าน Router เพื่อลดปัญหา IP เปลี่ยนหลังการเชื่อมต่อใหม่
+
 ## ส่วนที่ 13: ขั้นตอนปิดระบบอย่างปลอดภัย
 
 ถ้าจะหยุดชั่วคราว:
@@ -655,12 +699,12 @@ docker compose down
 
 ## อ้างอิงทางการ
 
-- ROS 2 Jazzy documentation: https://docs.ros.org/en/jazzy/index.html
-- Ubuntu download: https://ubuntu.com/download/desktop
-- Docker Engine on Ubuntu: https://docs.docker.com/engine/install/ubuntu/
-- Docker Engine on Debian: https://docs.docker.com/engine/install/debian/
-- Docker post-install: https://docs.docker.com/engine/install/linux-postinstall/
-- Raspberry Pi Imager / getting started: https://www.raspberrypi.com/software/
+- ROS 2 Jazzy documentation: <https://docs.ros.org/en/jazzy/index.html>
+- Ubuntu download: <https://ubuntu.com/download/desktop>
+- Docker Engine on Ubuntu: <https://docs.docker.com/engine/install/ubuntu/>
+- Docker Engine on Debian: <https://docs.docker.com/engine/install/debian/>
+- Docker post-install: <https://docs.docker.com/engine/install/linux-postinstall/>
+- Raspberry Pi Imager / getting started: <https://www.raspberrypi.com/software/>
 
 ## Copyright
 
