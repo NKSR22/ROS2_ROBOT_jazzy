@@ -661,3 +661,10 @@ docker compose down
 - Docker Engine on Debian: https://docs.docker.com/engine/install/debian/
 - Docker post-install: https://docs.docker.com/engine/install/linux-postinstall/
 - Raspberry Pi Imager / getting started: https://www.raspberrypi.com/software/
+
+## Copyright
+
+Copyright (c) 2026 Mr. Nakarin Sripanya  
+Department of Electrical Engineering  
+Faculty of Industry and Technology  
+Rajamangala University of Technology Isan, Sakon Nakhon Campus
