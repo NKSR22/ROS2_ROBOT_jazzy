@@ -1,0 +1,28 @@
+services:
+  sensors_node:
+    build: .
+    container_name: rpi_sensors
+    network_mode: host
+    privileged: true
+    environment:
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-30}
+    devices:
+      - /dev/ttyUSB1:/dev/ttyUSB1
+      - /dev/video0:/dev/video0
+    volumes:
+      - ./src:/ros2_ws/src:rw
+    stdin_open: true
+    tty: true
+
+  microros_agent:
+    image: microros/micro-ros-agent:jazzy
+    container_name: rpi_microros
+    network_mode: host
+    privileged: true
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    environment:
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-30}
+    command: serial --dev /dev/ttyUSB0 -v6

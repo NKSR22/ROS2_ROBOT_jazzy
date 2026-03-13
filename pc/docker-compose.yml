@@ -1,0 +1,16 @@
+services:
+  pc_simulation:
+    build: .
+    container_name: ros2_jazzy_pc
+    network_mode: host
+    privileged: true
+    environment:
+      DISPLAY: ${DISPLAY}
+      QT_X11_NO_MITSHM: "1"
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-30}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./src:/ros2_ws/src:rw
+    stdin_open: true
+    tty: true
